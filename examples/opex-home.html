@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DC Operations home (mock-up)</title>
+<title>Operations home (mock-up)</title>
 <style>
   :root {
     --red: #c4122f; --red-deep: #8f0a20; --red-ink: #fff;
@@ -144,7 +144,7 @@
   <main id="home" style="display: contents">
     <header class="top rise" style="--i: 0">
       <div>
-        <h1>Good morning, SudheerBabu</h1>
+        <h1>Good morning, Sam</h1>
         <p id="today"></p>
       </div>
       <div class="top-tools">
@@ -171,7 +171,7 @@
       <div class="sec-head rise" style="--i: 5"><h2>Coming soon</h2><span id="soonCount"></span></div>
       <div class="soon" id="soon"></div>
     </section>
-    <p class="none" id="none" hidden>No application matches that search. Try "stock" or "audit".</p>
+    <p class="none" id="none" hidden>No application matches that search. Try "forecast" or "audit".</p>
     <p class="note rise" style="--i: 16">Mock-up with sample numbers. Nothing here is connected to real data.</p>
   </main>
 
@@ -201,22 +201,22 @@ const ICON = {
   ruler: 'M4 20V6l14 14H4zM8 16v-2',
 }
 const APPS = [
-  { id: 'bad', name: 'Bad Items work queue', icon: 'alert', live: true, stat: 148, statLabel: 'slots flagged overnight', desc: 'Slotting issues found by the nightly rules run. Triage, act and track resolution per DC.' },
-  { id: 'cap', name: 'Case Cap (No Reslot)', icon: 'rows', live: true, stat: 37, statLabel: 'slots to verify', desc: 'Flow-rack slots whose case capacity can be raised in place, with the replens saved.' },
-  { id: 'aud', name: 'Audit Randomizer', icon: 'target', desc: 'Picker accuracy audit priorities and random pools per shift.' },
-  { id: 'rep', name: 'Stocking Replen Next Day Forecast', icon: 'box', desc: 'Next-day replenishment cases, trips and hours by section.' },
-  { id: 'ramp', name: 'New Hire Ramp', icon: 'trend', desc: 'New-hire LMS performance against ramp expectation and retention.' },
-  { id: 'ord', name: 'MWMS Order Inquiry', icon: 'search', desc: 'Store-order lookup for Conroe, Houston and Jersey City.' },
-  { id: 'dash', name: 'DashMart Delivery Actuals', icon: 'truck', desc: 'Planned against actual deliveries.' },
-  { id: 'vel', name: 'Item Velocity', icon: 'bolt', desc: 'Monthly item velocity, ABC class and movement status.' },
-  { id: 'thr', name: 'Stocking Throughput', icon: 'clock', desc: 'Cases stocked per paid hour by associate and stage point.' },
-  { id: 'head', name: 'Headcount and Turnover', icon: 'users', desc: 'Hourly DC headcount, hires, terms and 90-day retention.' },
-  { id: 'std', name: 'Standards Drift', icon: 'ruler', desc: 'Engineered standard against actual minutes by job function.' },
+  { id: 'bad', name: 'Exceptions work queue', icon: 'alert', live: true, stat: 148, statLabel: 'items flagged overnight', desc: 'Issues found by the nightly rules run. Triage, act and track resolution per site.' },
+  { id: 'cap', name: 'Capacity review', icon: 'rows', live: true, stat: 37, statLabel: 'locations to verify', desc: 'Locations whose capacity can be raised in place, with the trips saved.' },
+  { id: 'aud', name: 'Audit sampler', icon: 'target', desc: 'Audit priorities and random pools per shift.' },
+  { id: 'rep', name: 'Next-day workload forecast', icon: 'box', desc: 'Next-day cases, trips and hours by section.' },
+  { id: 'ramp', name: 'New hire ramp', icon: 'trend', desc: 'New-hire performance against ramp expectation and retention.' },
+  { id: 'ord', name: 'Order inquiry', icon: 'search', desc: 'Order lookup across sites.' },
+  { id: 'dash', name: 'Delivery actuals', icon: 'truck', desc: 'Planned against actual deliveries.' },
+  { id: 'vel', name: 'Item velocity', icon: 'bolt', desc: 'Monthly item velocity, class and movement status.' },
+  { id: 'thr', name: 'Throughput', icon: 'clock', desc: 'Units handled per paid hour by associate and stage.' },
+  { id: 'head', name: 'Headcount and turnover', icon: 'users', desc: 'Hourly headcount, hires, terms and 90-day retention.' },
+  { id: 'std', name: 'Standards drift', icon: 'ruler', desc: 'Engineered standard against actual minutes by job function.' },
 ]
 const SLIDES = [
-  { title: 'One platform, one network', text: 'Every DC tool in one place: work queues, audits, forecasts and KPIs.' },
-  { figure: 148, title: 'slots flagged overnight', text: 'The nightly rules run has finished. Open the Bad Items queue to triage them.' },
-  { figure: 9, title: 'applications on the way', text: 'Audit Randomizer and the next-day replen forecast are next.' },
+  { title: 'One platform, one network', text: 'Every operations tool in one place: work queues, audits, forecasts and KPIs.' },
+  { figure: 148, title: 'items flagged overnight', text: 'The nightly rules run has finished. Open the Exceptions queue to triage them.' },
+  { figure: 9, title: 'applications on the way', text: 'Audit sampler and the next-day workload forecast are next.' },
 ]
 const $ = (id) => document.getElementById(id)
 const svg = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[name]}"/></svg>`
