@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DC Operations home (mock-up)</title>
+<style>
+  :root {
+    --red: #c4122f; --red-deep: #8f0a20; --red-ink: #fff;
+    --paper: #f5f3f1; --surface: #fff; --line: #e2ddd8; --line-strong: #c3bbb3;
+    --ink: #1c1a1d; --muted: #6a6368; --ok: #17713c; --ok-bg: #dcf4e4;
+    --shadow: 0 14px 34px rgba(60, 12, 20, .14);
+    --ease: cubic-bezier(.2, .75, .2, 1);
+  }
+  * { box-sizing: border-box; }
+  html { font: 15px/1.5 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif; color: var(--ink); }
+  body { margin: 0; background: var(--paper); }
+  h1, h2, h3, p { margin: 0; }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--red); outline-offset: 2px; border-radius: 6px; }
+  .wrap { max-width: 1480px; margin: 0 auto; padding: 24px 32px 40px; display: flex; flex-direction: column; gap: 22px; }
+
+  /* Intro: one sequence on load. Each .rise waits its turn through --i. */
+  .intro .rise { animation: rise .7s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms + 80ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+  .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .top h1 { font-size: 1.9rem; font-weight: 700; letter-spacing: -.015em; line-height: 1.15; }
+  .top p { color: var(--muted); }
+  .top-tools { display: flex; gap: 10px; align-items: center; }
+  .search { display: flex; align-items: center; gap: 8px; width: 300px; height: 40px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); color: var(--muted); transition: width .25s var(--ease), border-color .15s; }
+  .search:focus-within { width: 360px; border-color: var(--red); outline: 2px solid color-mix(in srgb, var(--red) 25%, transparent); }
+  .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--ink); }
+  .search kbd { font: inherit; font-size: .8rem; padding: 0 6px; border: 1px solid var(--line-strong); border-radius: 4px; }
+  .btn { height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line-strong); background: var(--surface); font-weight: 600; cursor: pointer; }
+  .btn:hover { border-color: var(--ink); }
+  .btn:active { transform: translateY(1px); }
+
+  /* Banner: half the old height, slides cross-fade, the active dot is the timer. */
+  .banner { position: relative; height: 176px; border-radius: 16px; overflow: hidden; color: var(--red-ink); background: linear-gradient(100deg, var(--red-deep), var(--red) 55%, #d92742); }
+  .slide { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 0 36px; max-width: 62%; opacity: 0; transform: translateX(18px); transition: opacity .6s ease, transform .7s var(--ease); pointer-events: none; }
+  .slide.on { opacity: 1; transform: none; pointer-events: auto; }
+  .slide h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.01em; }
+  .slide p { opacity: .9; max-width: 52ch; }
+  .slide .figure { font-size: 2.6rem; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .dots { position: absolute; left: 36px; bottom: 16px; display: flex; gap: 6px; }
+  .dot { width: 26px; height: 4px; padding: 0; border: 0; border-radius: 99px; background: rgba(255, 255, 255, .32); overflow: hidden; cursor: pointer; }
+  .dot i { display: block; height: 100%; width: 0; background: #fff; }
+  .dot.on i { animation: tick 6s linear forwards; }
+  .banner:hover .dot.on i { animation-play-state: paused; }
+  @keyframes tick { to { width: 100%; } }
+  /* Each highlight has its own colour and its own moving pattern; they cross-fade. */
+  .scene { position: absolute; inset: 0; opacity: 0; transition: opacity .9s ease; }
+  .scene.on { opacity: 1; }
+  .scene-0 { background: linear-gradient(100deg, #8f0a20, #c4122f 55%, #d92742); }
+  .scene-1 { background: linear-gradient(100deg, #111d44, #22398a 55%, #3558c4); }
+  .scene-2 { background: linear-gradient(100deg, #083b38, #0f6e66 55%, #1f9d8a); }
+  /* Conveyor lanes: cartons travelling along tracks. */
+  .lanes { position: absolute; right: -70px; top: -50px; width: 540px; display: flex; flex-direction: column; gap: 14px; transform: rotate(-14deg); }
+  .lanes div { position: relative; height: 26px; border-radius: 99px; background: rgba(255, 255, 255, .09); overflow: hidden; }
+  .lanes i { position: absolute; top: 4px; left: 0; width: 38px; height: 18px; border-radius: 5px; background: rgba(255, 255, 255, .45); animation: convey var(--t) linear infinite; animation-delay: var(--d); }
+  .lanes div:nth-child(even) i { animation-direction: reverse; }
+  @keyframes convey { from { transform: translateX(-60px); } to { transform: translateX(580px); } }
+  /* Dot field: a wave passing across a grid of points. */
+  .field { position: absolute; right: -20px; top: -40px; display: grid; grid-template-columns: repeat(14, 14px); gap: 16px; transform: rotate(-14deg); }
+  .field span { width: 14px; height: 14px; border-radius: 50%; background: rgba(255, 255, 255, .14); animation: wave 3.6s ease-in-out infinite; animation-delay: var(--d); }
+  @keyframes wave { 0%, 60%, 100% { transform: scale(1); background: rgba(255, 255, 255, .14); } 30% { transform: scale(1.7); background: rgba(255, 255, 255, .55); } }
+  /* Rack bays: a grid of slots that light up, drifting slowly. */
+  .bays { position: absolute; right: -30px; top: -60px; display: grid; grid-template-columns: repeat(9, 30px); gap: 9px; transform: rotate(-14deg); animation: drift 22s ease-in-out infinite alternate; }
+  .bays span { width: 30px; height: 30px; border-radius: 5px; background: rgba(255, 255, 255, .1); animation: slot 5s ease-in-out infinite; animation-delay: var(--d); }
+  @keyframes drift { to { transform: rotate(-14deg) translate(-26px, 14px); } }
+  @keyframes slot { 0%, 70%, 100% { background: rgba(255, 255, 255, .1); } 82% { background: rgba(255, 255, 255, .5); } }
+
+  .sec-head { display: flex; align-items: baseline; gap: 10px; }
+  .sec-head h2 { font-size: 1.15rem; font-weight: 650; }
+  .sec-head span { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* Live apps: large, pressable. */
+  .live { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+  .app { position: relative; display: grid; grid-template-columns: auto 1fr auto; gap: 6px 16px; align-items: start; text-align: left; padding: 22px 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); cursor: pointer; transition: transform .2s var(--ease), box-shadow .2s, border-color .2s; }
+  .app:hover, .app:focus-visible { transform: translateY(-4px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--red) 45%, var(--line)); }
+  .app:active { transform: translateY(-1px); }
+  .icon { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--red) 10%, var(--surface)); color: var(--red); transition: transform .25s var(--ease), background .2s, color .2s; }
+  .icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .app:hover .icon { transform: scale(1.06); background: var(--red); color: #fff; }
+  .app h3 { font-size: 1.15rem; font-weight: 650; }
+  .app p { color: var(--muted); grid-column: 2 / -1; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 99px; background: var(--ok-bg); color: var(--ok); font-size: .85rem; font-weight: 600; }
+  .pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #2fa35d; animation: live 2.4s ease-out infinite; }
+  @keyframes live { 0% { box-shadow: 0 0 0 0 rgba(47, 163, 93, .55); } 70%, 100% { box-shadow: 0 0 0 7px rgba(47, 163, 93, 0); } }
+  .app-foot { grid-column: 2 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .stat { display: flex; align-items: baseline; gap: 8px; color: var(--muted); }
+  .stat b { font-size: 1.7rem; font-weight: 700; color: var(--ink); line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .go { display: inline-flex; align-items: center; gap: 6px; font-weight: 650; color: var(--red); opacity: 0; transform: translateX(-8px); transition: opacity .2s, transform .25s var(--ease); }
+  .app:hover .go, .app:focus-visible .go { opacity: 1; transform: none; }
+
+  /* Coming soon: smaller, quiet, no hover response. */
+  .soon { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+  .soon-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px dashed var(--line-strong); border-radius: 12px; color: var(--muted); }
+  .soon-item .icon { width: 34px; height: 34px; border-radius: 9px; background: #ebe7e3; color: var(--muted); flex: none; }
+  .soon-item .icon svg { width: 18px; height: 18px; }
+  .soon-item h3 { font-size: .97rem; font-weight: 600; color: var(--ink); }
+  .soon-item p { font-size: .87rem; line-height: 1.4; }
+  .none { padding: 28px; text-align: center; color: var(--muted); border: 1px dashed var(--line-strong); border-radius: 12px; }
+  [hidden] { display: none !important; }
+
+  /* Rolling numbers */
+  .roll { display: inline-flex; }
+  .roll-col { display: inline-block; height: 1.1em; overflow: hidden; }
+  .roll-reel { display: flex; flex-direction: column; transition: transform 2s var(--ease); will-change: transform; }
+  .roll-reel > span { height: 1.1em; line-height: 1.1; text-align: center; }
+
+  /* App page: the clicked card grows into this panel. */
+  .detail { display: flex; flex-direction: column; gap: 18px; }
+  .detail-card { padding: 28px 32px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; min-height: 420px; }
+  .detail-head { display: flex; align-items: center; gap: 16px; }
+  .detail-head h2 { font-size: 1.7rem; font-weight: 700; }
+  .rows { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .rows span { height: 44px; border-radius: 10px; background: linear-gradient(90deg, #f1eeeb 25%, #e6e1dc 50%, #f1eeeb 75%); background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .note { color: var(--muted); font-size: .9rem; }
+
+  ::view-transition-group(*) { animation-duration: .45s; animation-timing-function: cubic-bezier(.2, .75, .2, 1); }
+  @media (max-width: 1000px) {
+    .banner { height: 210px; }
+    .slide { justify-content: flex-start; padding-top: 26px; }
+    .slide .figure { font-size: 2rem; }
+    .slide h2 { font-size: 1.35rem; }
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 16px; }
+    .slide { max-width: 100%; padding: 0 20px; }
+    .bays, .lanes, .field { opacity: .5; }
+    .search, .search:focus-within { width: 100%; }
+    .top-tools { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body class="intro">
+<div class="wrap">
+  <main id="home" style="display: contents">
+    <header class="top rise" style="--i: 0">
+      <div>
+        <h1>Good morning, SudheerBabu</h1>
+        <p id="today"></p>
+      </div>
+      <div class="top-tools">
+        <label class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="q" type="search" placeholder="Find an application" aria-label="Find an application">
+          <kbd>/</kbd>
+        </label>
+      </div>
+    </header>
+
+    <section class="banner rise" style="--i: 1" aria-roledescription="carousel" aria-label="Highlights">
+      <div id="scenes" aria-hidden="true"></div>
+      <div id="slides"></div>
+      <div class="dots" id="dots"></div>
+    </section>
+
+    <section style="display: contents">
+      <div class="sec-head rise" style="--i: 2"><h2>Ready to use</h2><span id="liveCount"></span></div>
+      <div class="live" id="live"></div>
+    </section>
+
+    <section style="display: contents">
+      <div class="sec-head rise" style="--i: 5"><h2>Coming soon</h2><span id="soonCount"></span></div>
+      <div class="soon" id="soon"></div>
+    </section>
+    <p class="none" id="none" hidden>No application matches that search. Try "stock" or "audit".</p>
+    <p class="note rise" style="--i: 16">Mock-up with sample numbers. Nothing here is connected to real data.</p>
+  </main>
+
+  <section class="detail" id="detail" hidden>
+    <div><button class="btn" id="back">Back to applications</button></div>
+    <div class="detail-card" id="detailCard">
+      <div class="detail-head"><span class="icon" id="dIcon"></span><h2 id="dName"></h2><span class="pill">Open</span></div>
+      <p id="dDesc" class="note"></p>
+      <div class="rows"><span></span><span></span><span></span><span></span><span></span></div>
+      <p class="note">The application's own screen would load here.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const ICON = {
+  alert: 'M12 3 2 20h20L12 3zM12 10v4M12 17h.01',
+  target: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M7 12a5 5 0 1 0 10 0a5 5 0 1 0-10 0M12 12h.01',
+  rows: 'M4 6h16M4 12h16M4 18h16',
+  box: 'M3 8l9-5 9 5v8l-9 5-9-5V8zM3 8l9 5 9-5M12 13v8',
+  trend: 'M3 17l6-6 4 4 8-8M15 7h6v6',
+  search: 'M4 11a7 7 0 1 0 14 0a7 7 0 1 0-14 0M21 21l-4.3-4.3',
+  truck: 'M3 6h11v10H3zM14 9h4l3 3v4h-7M7 19a1.5 1.5 0 1 0 0-3a1.5 1.5 0 1 0 0 3M17 19a1.5 1.5 0 1 0 0-3a1.5 1.5 0 1 0 0 3',
+  bolt: 'M13 2 4 14h7l-1 8 9-12h-7l1-8z',
+  clock: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M12 7v5l3 2',
+  users: 'M6 8a3 3 0 1 0 6 0a3 3 0 1 0-6 0M3 20a6 6 0 0 1 12 0M17 5a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6',
+  ruler: 'M4 20V6l14 14H4zM8 16v-2',
+}
+const APPS = [
+  { id: 'bad', name: 'Bad Items work queue', icon: 'alert', live: true, stat: 148, statLabel: 'slots flagged overnight', desc: 'Slotting issues found by the nightly rules run. Triage, act and track resolution per DC.' },
+  { id: 'cap', name: 'Case Cap (No Reslot)', icon: 'rows', live: true, stat: 37, statLabel: 'slots to verify', desc: 'Flow-rack slots whose case capacity can be raised in place, with the replens saved.' },
+  { id: 'aud', name: 'Audit Randomizer', icon: 'target', desc: 'Picker accuracy audit priorities and random pools per shift.' },
+  { id: 'rep', name: 'Stocking Replen Next Day Forecast', icon: 'box', desc: 'Next-day replenishment cases, trips and hours by section.' },
+  { id: 'ramp', name: 'New Hire Ramp', icon: 'trend', desc: 'New-hire LMS performance against ramp expectation and retention.' },
+  { id: 'ord', name: 'MWMS Order Inquiry', icon: 'search', desc: 'Store-order lookup for Conroe, Houston and Jersey City.' },
+  { id: 'dash', name: 'DashMart Delivery Actuals', icon: 'truck', desc: 'Planned against actual deliveries.' },
+  { id: 'vel', name: 'Item Velocity', icon: 'bolt', desc: 'Monthly item velocity, ABC class and movement status.' },
+  { id: 'thr', name: 'Stocking Throughput', icon: 'clock', desc: 'Cases stocked per paid hour by associate and stage point.' },
+  { id: 'head', name: 'Headcount and Turnover', icon: 'users', desc: 'Hourly DC headcount, hires, terms and 90-day retention.' },
+  { id: 'std', name: 'Standards Drift', icon: 'ruler', desc: 'Engineered standard against actual minutes by job function.' },
+]
+const SLIDES = [
+  { title: 'One platform, one network', text: 'Every DC tool in one place: work queues, audits, forecasts and KPIs.' },
+  { figure: 148, title: 'slots flagged overnight', text: 'The nightly rules run has finished. Open the Bad Items queue to triage them.' },
+  { figure: 9, title: 'applications on the way', text: 'Audit Randomizer and the next-day replen forecast are next.' },
+]
+const $ = (id) => document.getElementById(id)
+const svg = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[name]}"/></svg>`
+const transition = (fn) => (document.startViewTransition ? document.startViewTransition(fn) : fn())
+
+/* Rolling number: a reel of 0-9 twice per digit, so each digit spins a full turn before it lands. */
+function roll(el, value) {
+  const digits = String(value).split('')
+  el.classList.add('roll')
+  el.setAttribute('role', 'img')
+  el.setAttribute('aria-label', value)
+  el.innerHTML = digits.map((_, i) => `<span class="roll-col" aria-hidden="true"><span class="roll-reel" style="transition-delay:${200 + i * 140}ms">${Array.from({ length: 20 }, (_, n) => `<span>${n % 10}</span>`).join('')}</span></span>`).join('')
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    el.querySelectorAll('.roll-reel').forEach((r, i) => (r.style.transform = `translateY(-${((10 + Number(digits[i])) * 1.1).toFixed(1)}em)`))
+  }))
+}
+
+function render() {
+  const live = APPS.filter((a) => a.live), soon = APPS.filter((a) => !a.live)
+  $('live').innerHTML = live.map((a, i) => `
+    <button class="app rise" data-id="${a.id}" style="--i:${3 + i}; view-transition-name: app-${a.id}">
+      <span class="icon">${svg(a.icon)}</span><h3>${a.name}</h3><span class="pill">Open</span>
+      <p>${a.desc}</p>
+      <span class="app-foot"><span class="stat"><b data-roll="${a.stat}"></b>${a.statLabel}</span><span class="go">Open <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span>
+    </button>`).join('')
+  $('soon').innerHTML = soon.map((a, i) => `
+    <div class="soon-item rise" data-id="${a.id}" style="--i:${6 + i}; view-transition-name: app-${a.id}">
+      <span class="icon">${svg(a.icon)}</span><div><h3>${a.name}</h3><p>${a.desc}</p></div>
+    </div>`).join('')
+  $('liveCount').textContent = `${live.length} applications`
+  $('soonCount').textContent = `${soon.length} applications`
+  rollAll()
+}
+const rollAll = () => document.querySelectorAll('[data-roll]').forEach((el) => roll(el, el.dataset.roll))
+
+/* Banner */
+let at = 0
+function banner() {
+  const rnd = (n) => (Math.random() * n).toFixed(2)
+  const bays = Array.from({ length: 72 }, () => `<span style="--d:${rnd(5)}s"></span>`).join('')
+  const lanes = Array.from({ length: 9 }, () => `<div>${[0, 1].map(() => `<i style="--t:${(5 + Math.random() * 5).toFixed(1)}s; --d:-${rnd(8)}s"></i>`).join('')}</div>`).join('')
+  const field = Array.from({ length: 14 * 9 }, (_, n) => `<span style="--d:${(((n % 14) + Math.floor(n / 14)) * 0.13).toFixed(2)}s"></span>`).join('')
+  $('scenes').innerHTML = [`<div class="bays">${bays}</div>`, `<div class="lanes">${lanes}</div>`, `<div class="field">${field}</div>`]
+    .map((p, i) => `<div class="scene scene-${i}">${p}</div>`).join('')
+  $('slides').innerHTML = SLIDES.map((s, i) => `<div class="slide" data-i="${i}">${s.figure ? `<span class="figure" data-fig="${s.figure}"></span>` : ''}<h2>${s.title}</h2><p>${s.text}</p></div>`).join('')
+  $('dots').innerHTML = SLIDES.map((s, i) => `<button class="dot" data-i="${i}" aria-label="Show highlight ${i + 1}"><i></i></button>`).join('')
+  $('dots').addEventListener('click', (e) => { const d = e.target.closest('.dot'); if (d) show(Number(d.dataset.i)) })
+  $('dots').addEventListener('animationend', (e) => { if (e.animationName === 'tick') show((at + 1) % SLIDES.length) })
+  show(0)
+}
+function show(i) {
+  at = i
+  document.querySelectorAll('.slide').forEach((s, n) => s.classList.toggle('on', n === i))
+  document.querySelectorAll('.scene').forEach((s, n) => s.classList.toggle('on', n === i))
+  document.querySelectorAll('.dot').forEach((d, n) => { d.classList.remove('on'); if (n === i) { void d.offsetWidth; d.classList.add('on') } })
+  const fig = document.querySelector(`.slide[data-i="${i}"] [data-fig]`)
+  if (fig) roll(fig, fig.dataset.fig)
+}
+
+/* Search: cards that stay glide to their new places. */
+$('q').addEventListener('input', () => {
+  const q = $('q').value.trim().toLowerCase()
+  transition(() => {
+    let shown = 0
+    document.querySelectorAll('[data-id]').forEach((el) => {
+      const a = APPS.find((x) => x.id === el.dataset.id)
+      const hit = !q || `${a.name} ${a.desc}`.toLowerCase().includes(q)
+      el.hidden = !hit
+      if (hit) shown++
+    })
+    for (const id of ['live', 'soon']) {
+      const any = $(id).querySelector('[data-id]:not([hidden])')
+      $(id).hidden = !any
+      $(id).previousElementSibling.hidden = !any
+    }
+    $('none').hidden = shown > 0
+  })
+})
+document.addEventListener('keydown', (e) => {
+  if (e.key === '/' && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus() }
+})
+
+/* Open: the card and the app page share a transition name, so one grows into the other. */
+$('live').addEventListener('click', (e) => {
+  const card = e.target.closest('.app')
+  if (!card) return
+  const a = APPS.find((x) => x.id === card.dataset.id)
+  document.body.classList.remove('intro')
+  transition(() => {
+    $('home').hidden = true
+    $('dIcon').innerHTML = svg(a.icon); $('dName').textContent = a.name; $('dDesc').textContent = a.desc
+    $('detailCard').style.viewTransitionName = `app-${a.id}`
+    $('detail').hidden = false
+    scrollTo(0, 0)
+  })
+})
+$('back').addEventListener('click', () => transition(() => {
+  $('detail').hidden = true
+  $('detailCard').style.viewTransitionName = ''
+  $('home').hidden = false
+}))
+
+$('today').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) + '. 2 applications are ready, 9 are on the way.'
+render(); banner()
+</script>
+</body>
+</html>
